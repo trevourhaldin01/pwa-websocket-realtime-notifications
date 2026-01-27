@@ -9,10 +9,11 @@ import { useSuggestionsSocket } from './hooks/useSuggestionsSocket';
 import Login from './components/LoginForm'
 import SuggestionForm from './components/SuggestionForm'
 import Suggestions from './components/Suggestions'
+import ProtectedRoute from './routes/ProtectedRoute'
+import {useAuth } from './contexts/AuthContext'
 
 function App() {
-  const [suggestions, setSuggestions] = useState([]);
-  const isAuthenticated = Boolean(localStorage.getItem("authToken"));
+  const {isAuthenticated}  = useAuth();
   useEffect(() => {
     requestNotificationPermission();
 
@@ -27,20 +28,20 @@ function App() {
     }
   }, []);
 
-
-
   useSuggestionsSocket(handleMessage, isAuthenticated);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/form" element={<SuggestionForm />} />
-        <Route path="*" element={<SuggestionForm />} />
-        <Route path="/suggestions" element={<Suggestions />} />
-      </Routes>
-    </Router>
 
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/form" element={<SuggestionForm />} />
+          <Route path="*" element={<SuggestionForm />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/suggestions" element={<Suggestions />} />
+          </Route>
+        </Routes>
+      </Router>
   )
 }
 

@@ -29,23 +29,41 @@ export default function SuggestionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Submit a Suggestion</h2>
-      <input
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Message"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={loading}>
-        {loading ? "Submitting..." : "Submit"}
-      </button>
-    </form>
+    <div className="w-full max-w-md mx-auto mt-10 p-6 border border-gray-300 rounded">
+      <h2 className="text-2xl font-bold">Submit a Suggestion</h2>
+      <form onSubmit={handleSubmit} className="p-4">
+
+        <input
+          placeholder="Title..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="w-full p-2 border-t-0 border-l-0 border-r-0 border-b mb-4 focus:outline-none focus:border-b-2"
+        />
+        <textarea
+          placeholder="Message..."
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          required
+          className="w-full p-2 border-t-0 border-l-0 border-r-0 border-b focus:outline-none focus:border-b-2 mb-4"
+        />
+
+        <button
+          type="submit"
+          className={
+            `w-full bg-black hover:bg-gray-700 disabled:bg-gray-400  text-white p-2
+             `
+            }
+        
+          disabled={loading}
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+
+
+
+      </form>
+    </div>
   );
 }

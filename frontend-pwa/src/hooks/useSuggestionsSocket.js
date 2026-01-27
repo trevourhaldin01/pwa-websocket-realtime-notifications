@@ -1,20 +1,30 @@
 import { useEffect, useRef } from "react";
 
 const BASE_WS_URL = import.meta.env.VITE_SUGGESTIONS_WS_URL || "ws://localhost:8000/ws/suggestions";
-const token = localStorage.getItem("authToken");
 
-const WS_URL = token ? `${BASE_WS_URL}?token=${token}` : BASE_WS_URL;
 
 
 export const useSuggestionsSocket = (onMessage, isAuthenticated) => {
     const socketRef = useRef(null);
     const reconnectRef = useRef(1000); //initial reconnect 1s
     useEffect(() => {
-        if (!isAuthenticated) return;
+        if (!isAuthenticated) {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+            return;
+
+        }
 
         let ws;
+        let shouldReconnect = true;
         const connect = () => {
-            ws = new WebSocket(WS_URL);
+            const token = localStorage.getItem("authToken");
+            const wsUrl = token
+                ? `${BASE_WS_URL}?token=${token}`
+                : BASE_WS_URL;
+            ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
                 console.log("WebSocket connected");
@@ -41,12 +51,13 @@ export const useSuggestionsSocket = (onMessage, isAuthenticated) => {
 
         }
         connect();
-        return ()=> {
-            if(ws){
+        return () => {
+            shouldReconnect = false;
+            if (ws) {
                 ws.close();
             }
 
-        }  
+        }
     }, [onMessage, isAuthenticated]);
 
 };  

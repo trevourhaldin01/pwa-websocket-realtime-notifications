@@ -9,15 +9,16 @@ export default function Suggestions() {
             .then(setSuggestions)
     }, [])
     return (
-        <div>
-            <h3>Suggestions</h3>
+        <div className="w-full max-w-3xl mx-auto mt-10">
+            <h3 className="text-2xl font-bold">Suggestions</h3>
             {suggestions.length === 0 ? (
                 <p>No suggestions yet.</p>
             ) : (
                 suggestions.map((suggestion) => (
-                    <div key={suggestion.id} style={{ border: '1px solid #ccc', marginBottom: '10px', padding: '10px' }}>
-                        <h4>{suggestion.title}</h4>
-                        <p>{suggestion.description}</p>
+                    <div key={suggestion?.id} className="w-full flex  flex-col items-start border-b border-gray-300 pt-4">
+                        <p className="font-bold text-[24px] ">{suggestion?.title}</p>
+                        <p className="font-medium w-full text-left max-h-24 wrap-break-word">{suggestion?.message}</p>
+                        <p className="text-gray-500 text-xs ">{suggestion?.created_at}</p>
                     </div>
                 ))
             )}
