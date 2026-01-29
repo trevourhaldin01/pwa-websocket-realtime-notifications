@@ -1,8 +1,9 @@
-from fastapi import FastAPI,Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI,Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Suggestion, User
-from schemas import SuggestionCreate,SuggestionOut, UserCreate, UserLogin
+from schemas import SuggestionCreate,SuggestionOut, UserCreate, UserLogin, PaginatedSuggestions
 from ws import ConnectionManager
 from fastapi.middleware.cors import CORSMiddleware
 from auth import verify_token, hash_password, verify_password,create_access_token
@@ -81,9 +82,41 @@ async def create_suggestion(data: SuggestionCreate, db: Session = Depends(get_db
     })
     return suggestion
 
-@app.get("/suggestions", response_model=list[SuggestionOut])
-def get_suggestions(db: Session = Depends(get_db)):
-    return db.query(Suggestion).order_by(Suggestion.created_at.desc()).all()
+@app.get("/suggestions", response_model=PaginatedSuggestions)
+def get_suggestions(
+    token: str, 
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(10, ge=1, le=100, description="Number of items per page")
+):
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # calculate offset
+    offset = (page - 1) * page_size
+
+    suggestions = (
+        db.query(Suggestion)
+        .order_by(Suggestion.created_at.desc())
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+    # Convert to Pydantic models (v2)
+    try:
+        data = [SuggestionOut.model_validate(s) for s in suggestions]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Pydantic validation failed: {e}")
+
+    total = db.query(Suggestion).count()
+    return PaginatedSuggestions(
+        total=total,
+        page=page,
+        page_size=page_size,
+        data=data
+    )
+    
 
 @app.websocket("/ws/suggestions")
 async def suggestions_ws(websocket: WebSocket, token:str):

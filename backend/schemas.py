@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class SuggestionCreate(BaseModel):
     title: str
@@ -6,9 +7,19 @@ class SuggestionCreate(BaseModel):
 
 class SuggestionOut(SuggestionCreate):
     id: int
+    title: str
+    message: str
+    created_at: datetime
 
-    class Config:
-        orm_mode = True    
+    model_config ={
+        "from_attributes": True
+    }   
+
+class PaginatedSuggestions(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    data: list[SuggestionOut]
 
 class UserCreate(BaseModel):
     username: str
